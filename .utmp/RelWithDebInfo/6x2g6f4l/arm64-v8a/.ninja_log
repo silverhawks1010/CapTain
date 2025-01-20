@@ -1,0 +1,23 @@
+# ninja log v5
+90	586	7584113306551211	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	a37c13368f0bc50e
+19	4738	7584113348278792	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	49009344a1192272
+30	3356	7584113334167723	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	5e97a5127f9f6b0f
+587	2285	7584113321239520	D:/_Dev/GameDev/Naval battle/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x2g6f4l/obj/arm64-v8a/libswappywrapper.so	417b388879279e2e
+84	3658	7584113336859117	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	88d465493a6becf8
+24	3163	7584113332216291	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	db3987a8ad564eba
+70	3648	7584113337049851	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	37a7cbe1032fd492
+8	4348	7584113344283905	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	9cbdda41e40bbf6a
+76	3792	7584113338822505	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	4f72638d6ef3b9f9
+34	4901	7584113349879632	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	fefba199fee6c005
+4901	5089	7584113351782106	D:/_Dev/GameDev/Naval battle/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x2g6f4l/obj/arm64-v8a/libgame.so	b78e3a03cc5a2479
+77	1158	7584173387610465	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	a37c13368f0bc50e
+1159	1575	7584173391771905	D:/_Dev/GameDev/Naval battle/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x2g6f4l/obj/arm64-v8a/libswappywrapper.so	417b388879279e2e
+62	2550	7584173401465469	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	37a7cbe1032fd492
+67	2595	7584173401920034	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	4f72638d6ef3b9f9
+60	2595	7584173401945202	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	db3987a8ad564eba
+53	2622	7584173402217208	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	5e97a5127f9f6b0f
+74	2654	7584173402511274	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	88d465493a6becf8
+3	2730	7584173403271750	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	9cbdda41e40bbf6a
+70	2905	7584173405049187	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	fefba199fee6c005
+56	3011	7584173406052297	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	49009344a1192272
+3011	3122	7584173407237181	D:/_Dev/GameDev/Naval battle/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x2g6f4l/obj/arm64-v8a/libgame.so	b78e3a03cc5a2479
