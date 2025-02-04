@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using System.Collections.Generic;
 
 public class GridRenderer : MonoBehaviour
@@ -11,11 +12,18 @@ public class GridRenderer : MonoBehaviour
 
     private float cellSize;  // Will be calculated based on container size
     public float CellSize => cellSize;
+    public int GridSize => gridSize;
 
     private GridCell[,] grid;
     private RectTransform rectTransform;
     private float lastHeight;
     private bool isUpdating = false;
+
+    private bool[,] hitCells;
+    private bool[,] hitMarkers;
+    private bool[,] occupiedCells;
+
+    public UnityEvent<Vector2Int> CellClicked = new UnityEvent<Vector2Int>();
 
     private void Awake()
     {
@@ -131,6 +139,9 @@ public class GridRenderer : MonoBehaviour
         }
 
         grid = new GridCell[gridSize, gridSize];
+        occupiedCells = new bool[gridSize, gridSize];
+        hitCells = new bool[gridSize, gridSize];
+        hitMarkers = new bool[gridSize, gridSize];
         float totalSize = cellSize * gridSize;
         float startX = -totalSize / 2f;
         float startY = totalSize / 2f;
@@ -175,7 +186,7 @@ public class GridRenderer : MonoBehaviour
         {
             int xPos = x;
             int yPos = y;
-            button.onClick.AddListener(() => OnCellClicked(xPos, yPos));
+            button.onClick.AddListener(() => CellClicked.Invoke(new Vector2Int(xPos, yPos)));
         }
     }
 
@@ -212,26 +223,50 @@ public class GridRenderer : MonoBehaviour
         );
     }
 
+    public bool IsCellHit(int x, int y)
+    {
+        if (!IsValidCell(x, y)) return false;
+        return hitCells[x, y];
+    }
+
     public bool IsCellOccupied(int x, int y)
     {
-        if (x >= 0 && x < gridSize && y >= 0 && y < gridSize && grid[x, y] != null)
+        if (!IsValidCell(x, y)) return false;
+        return occupiedCells[x, y];
+    }
+
+    public void SetCellHit(int x, int y, bool isHit)
+    {
+        if (!IsValidCell(x, y)) return;
+
+        hitCells[x, y] = true;
+        hitMarkers[x, y] = isHit;
+        
+        if (grid[x, y] != null)
         {
-            return grid[x, y].IsOccupied;
+            grid[x, y].SetHitState(isHit);
         }
-        return false;
     }
 
     public void SetCellOccupied(int x, int y, bool occupied)
     {
-        if (x >= 0 && x < gridSize && y >= 0 && y < gridSize && grid[x, y] != null)
+        if (!IsValidCell(x, y))
         {
-            grid[x, y].IsOccupied = occupied;
+            Debug.LogWarning($"Invalid cell coordinates: {x}, {y}");
+            return;
         }
+        occupiedCells[x, y] = occupied;
     }
 
-    private void OnCellClicked(int x, int y)
+    private bool IsValidCell(int x, int y)
+    {
+        return x >= 0 && x < gridSize && y >= 0 && y < gridSize;
+    }
+
+    public void OnCellClicked(int x, int y)
     {
         Debug.Log($"Cell clicked at: {x}, {y}");
+        CellClicked.Invoke(new Vector2Int(x, y));
     }
 
     private void OnDestroy()

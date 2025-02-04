@@ -9,6 +9,8 @@ public class GridCell : MonoBehaviour
     public int X { get; private set; }
     public int Y { get; private set; }
     private bool isOccupied;
+    [SerializeField] private Color hitColor = Color.red;
+    [SerializeField] private Color missColor = Color.white;
     private Image cellImage;
     
     public bool IsOccupied
@@ -49,6 +51,36 @@ public class GridCell : MonoBehaviour
         if (cellImage != null)
         {
             cellImage.color = isOccupied ? OCCUPIED_COLOR : UNOCCUPIED_COLOR;
+        }
+    }
+
+    public void SetHitState(bool isHit)
+    {
+        // Créer un marqueur de tir (X rouge pour touché, point blanc pour manqué)
+        GameObject marker = new GameObject("HitMarker");
+        marker.transform.SetParent(transform);
+        
+        Image markerImage = marker.AddComponent<Image>();
+        RectTransform markerRect = marker.GetComponent<RectTransform>();
+        
+        // Configurer le RectTransform
+        markerRect.anchorMin = new Vector2(0.5f, 0.5f);
+        markerRect.anchorMax = new Vector2(0.5f, 0.5f);
+        markerRect.pivot = new Vector2(0.5f, 0.5f);
+        
+        if (isHit)
+        {
+            // Créer un X rouge pour une touche
+            markerImage.sprite = Resources.Load<Sprite>("X"); // Assurez-vous d'avoir un sprite X
+            markerImage.color = hitColor;
+            markerRect.sizeDelta = new Vector2(20, 20);
+        }
+        else
+        {
+            // Créer un point blanc pour un tir manqué
+            markerImage.sprite = Resources.Load<Sprite>("Dot"); // Assurez-vous d'avoir un sprite point
+            markerImage.color = missColor;
+            markerRect.sizeDelta = new Vector2(10, 10);
         }
     }
 }

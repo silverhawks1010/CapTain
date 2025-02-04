@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class UIController : MonoBehaviour
 {
@@ -24,6 +26,11 @@ public class UIController : MonoBehaviour
     public GameObject startButtonPanel;
     public GameObject GameOverPanel;
     public GameObject placementPanel;
+
+    [Header("Game State UI")]
+    [SerializeField] private TextMeshProUGUI turnText;
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private TextMeshProUGUI gameOverText;
 
     void Awake()
     {
@@ -77,8 +84,44 @@ public class UIController : MonoBehaviour
 
     public void OnClickPlacementButton()
     {
+        Debug.Log("Placement button clicked");
         buttonAudioSource.PlayOneShot(buttonClickSound);
         placementPanel.SetActive(false);
-        Debug.Log("Placement Button Clicked");
+        
+        // Démarrer le jeu via le GameManager
+        if (GameManager.instance != null)
+        {
+            Debug.Log("Calling GameManager.StartGame()");
+            GameManager.instance.StartGame();
+        }
+        else
+        {
+            Debug.LogError("GameManager instance is null! Make sure there is a GameManager in the scene.");
+        }
+        
+        Debug.Log("Placement button processing complete");
+    }
+
+    public void UpdateTurnDisplay(bool isPlayerTurn)
+    {
+        if (turnText != null)
+        {
+            turnText.text = isPlayerTurn ? "Votre tour" : "Tour de l'adversaire";
+            turnText.color = isPlayerTurn ? Color.green : Color.red;
+        }
+    }
+
+    public void ShowGameOver(bool playerWins)
+    {
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+            
+            if (gameOverText != null)
+            {
+                gameOverText.text = playerWins ? "Victoire !" : "Défaite...";
+                gameOverText.color = playerWins ? Color.green : Color.red;
+            }
+        }
     }
 }

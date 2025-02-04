@@ -4,16 +4,21 @@ using System.Collections.Generic;
 
 public class ShipPlacementManager : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Canvas gameCanvas;
-    [SerializeField] private GridRenderer gridRenderer;
-    [SerializeField] private GameObject shipPrefab;
-    [SerializeField] private GameObject chaloupPrefab;
-    [SerializeField] private GameObject sloopPrefab;
-    [SerializeField] private GameObject brigantinPrefab;
+    public GridRenderer gridRenderer; // Rendu public pour être accessible depuis GameManager
     [SerializeField] private Transform shipContainer;
-    
-    private readonly int[] shipSizes = { 4, 3, 3, 2 }; // Tailles standard des bateaux
+
+    [Header("Ship Prefabs")]
+    [SerializeField] private GameObject shipPrefab;      // 5 cases
+    [SerializeField] private GameObject brigantinPrefab; // 4 cases
+    [SerializeField] private GameObject sloopPrefab;     // 3 cases
+    [SerializeField] private GameObject chaloupPrefab;   // 2 cases
+
+    private readonly int[] shipSizes = { 5, 4, 3, 3, 2 }; // Tailles standard des bateaux
     private List<Ship> ships = new List<Ship>();
+    private bool isEnemyGrid = false;
+    private bool isLocked = false;
 
     private void Start()
     {
@@ -33,26 +38,182 @@ public class ShipPlacementManager : MonoBehaviour
             return;
         }
 
-        PlaceShipsRandomly();
-    }
-
-    private void PlaceShipsRandomly()
-    {
-        int i = 0;
-        foreach (int size in shipSizes)
+        // Positionner la grille et le ship container
+        RectTransform gridRect = gridRenderer.GetComponent<RectTransform>();
+        RectTransform containerRect = shipContainer.GetComponent<RectTransform>();
+        
+        if (gridRect != null && containerRect != null)
         {
-            Vector2Int position = new Vector2Int(0, 9-i);
-            CreateShip(size, position, true);
-            i++;
+            float xOffset = isEnemyGrid ? 120f : -120f;
+            gridRect.anchoredPosition = new Vector2(xOffset, gridRect.anchoredPosition.y);
+            containerRect.anchoredPosition = new Vector2(xOffset, containerRect.anchoredPosition.y);
+        }
+
+        // Si ce n'est pas la grille ennemie, placer les bateaux initiaux
+        if (!isEnemyGrid)
+        {
+            PlaceInitialShips();
         }
     }
 
-    private void CreateShip(int length, Vector2Int startPosition, bool isHorizontal)
+    private void PlaceInitialShips()
+    {
+        // Placer les bateaux initiaux pour le joueur (toujours horizontaux)
+        CreateShip(5, new Vector2Int(0, 0), true); // Horizontal
+        CreateShip(4, new Vector2Int(0, 1), true); // Horizontal
+        CreateShip(3, new Vector2Int(0, 2), true); // Horizontal
+        CreateShip(3, new Vector2Int(0, 3), true); // Horizontal
+        CreateShip(2, new Vector2Int(0, 4), true); // Horizontal
+    }
+
+    public void Initialize(bool isEnemy)
+    {
+        this.isEnemyGrid = isEnemy;
+        if (isEnemy)
+        {
+            PlaceShipsRandomly();
+        }
+    }
+
+    public void PlaceShipsRandomly()
+    {
+        // Nettoyer les bateaux existants et la grille
+        foreach (Ship ship in ships)
+        {
+            Destroy(ship.gameObject);
+        }
+        ships.Clear();
+
+        // Réinitialiser toutes les cellules
+        for (int x = 0; x < gridRenderer.GridSize; x++)
+        {
+            for (int y = 0; y < gridRenderer.GridSize; y++)
+            {
+                gridRenderer.SetCellOccupied(x, y, false);
+            }
+        }
+
+        // Liste des tailles de bateaux à placer (1 de chaque taille)
+        List<int> shipSizes = new List<int> { 5, 4, 3, 3, 2 };
+
+        // Pour chaque bateau
+        foreach (int size in shipSizes)
+        {
+            bool placed = false;
+            int maxAttempts = 100; // Éviter une boucle infinie
+            int attempts = 0;
+
+            while (!placed && attempts < maxAttempts)
+            {
+                attempts++;
+
+                // Choisir une orientation aléatoire
+                bool isHorizontal = Random.Range(0, 2) == 0;
+
+                // Calculer les limites en fonction de l'orientation
+                int maxX = isHorizontal ? gridRenderer.GridSize - size : gridRenderer.GridSize - 1;
+                int maxY = isHorizontal ? gridRenderer.GridSize - 1 : gridRenderer.GridSize - size;
+
+                // Choisir une position aléatoire
+                int x = Random.Range(0, maxX + 1);
+                int y = Random.Range(0, maxY + 1);
+                Vector2Int position = new Vector2Int(x, y);
+
+                // Vérifier si la position est valide
+                bool isValid = true;
+
+                // Vérifier chaque cellule que le bateau occuperait
+                for (int i = 0; i < size; i++)
+                {
+                    Vector2Int checkPos = position + (isHorizontal ? new Vector2Int(i, 0) : new Vector2Int(0, i));
+                    
+                    // Vérifier la cellule elle-même
+                    if (gridRenderer.IsCellOccupied(checkPos.x, checkPos.y))
+                    {
+                        isValid = false;
+                        break;
+                    }
+                }
+
+                // Si la position est valide, placer le bateau
+                if (isValid)
+                {
+                    CreateShip(size, position, isHorizontal);
+                    placed = true;
+                }
+            }
+
+            if (!placed)
+            {
+                Debug.LogError($"Failed to place ship of size {size} after {maxAttempts} attempts");
+            }
+        }
+    }
+
+    public void LockShips()
+    {
+        isLocked = true;
+        foreach (var ship in ships)
+        {
+            if (ship != null)
+            {
+                // Désactiver le drag & drop et la rotation
+                Destroy(ship.GetComponent<CanvasGroup>());
+                ship.enabled = false;
+            }
+        }
+    }
+
+    public void HideShips()
+    {
+        foreach (Ship ship in ships)
+        {
+            ship.GetComponent<CanvasGroup>().alpha = 0f;
+        }
+    }
+
+    public void RevealShip(Vector2Int position)
+    {
+        foreach (var ship in ships)
+        {
+            if (ship.IsPositionOnShip(position))
+            {
+                ship.SetVisible(true);
+                break;
+            }
+        }
+    }
+
+    public void RevealAllShips()
+    {
+        foreach (var ship in ships)
+        {
+            ship.SetVisible(true);
+        }
+    }
+
+    public bool AreAllShipsSunk()
+    {
+        foreach (var ship in ships)
+        {
+            if (!ship.IsSunk())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void CreateShip(int length, Vector2Int startPosition, bool isHorizontal)
     {
         GameObject shipObject = null;
 
         // Sélectionner le bon prefab en fonction de la taille
-        if (length == 4)
+        if (length == 5)
+        {
+            shipObject = Instantiate(shipPrefab, shipContainer);
+        }
+        else if (length == 4)
         {
             shipObject = Instantiate(brigantinPrefab, shipContainer);
         }
@@ -95,31 +256,6 @@ public class ShipPlacementManager : MonoBehaviour
         shipRect.anchorMax = new Vector2(0.5f, 0.5f);
         shipRect.pivot = new Vector2(0.5f, 0.5f);
 
-        // Calculer la taille du bateau en fonction de la taille des cellules
-        float cellSize = gridRenderer.CellSize;
-        float margin = 4f; // marge en pixels
-        if (isHorizontal)
-        {
-            shipRect.sizeDelta = new Vector2(cellSize * length - margin, cellSize - margin);
-        }
-        else
-        {
-            shipRect.sizeDelta = new Vector2(cellSize - margin, cellSize * length - margin);
-        }
-
-        // Positionner le bateau sur la grille
-        Vector2 startPos = gridRenderer.GetCellPosition(startPosition.x, startPosition.y);
-        if (isHorizontal)
-        {
-            startPos.x += (cellSize * (length - 1)) / 2f;
-        }
-        else
-        {
-            startPos.y -= (cellSize * (length - 1)) / 2f;
-        }
-        
-        shipRect.anchoredPosition = startPos;
-
         // Configurer l'image du bateau
         if (shipImage != null)
         {
@@ -147,14 +283,8 @@ public class ShipPlacementManager : MonoBehaviour
             ship = shipObject.AddComponent<Ship>();
         }
 
-        ship.Initialize(length, startPosition);
+        // Laisser Ship gérer la taille, la position et l'occupation des cellules
+        ship.Initialize(length, startPosition, isHorizontal, gridRenderer);
         ships.Add(ship);
-
-        // Marquer les cellules comme occupées
-        for (int i = 0; i < length; i++)
-        {
-            Vector2Int pos = startPosition + (isHorizontal ? new Vector2Int(i, 0) : new Vector2Int(0, i));
-            gridRenderer.SetCellOccupied(pos.x, pos.y, true);
-        }
     }
 }
